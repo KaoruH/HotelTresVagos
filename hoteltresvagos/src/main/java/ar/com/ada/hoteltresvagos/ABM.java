@@ -1,6 +1,8 @@
 package ar.com.ada.hoteltresvagos;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
@@ -56,6 +58,10 @@ public class ABM {
                         listarPorNombre();
                         break;
 
+                    case 6:
+                        listarPorDni();
+                        break;
+
                     default:
                         System.out.println("La opcion no es correcta.");
                         break;
@@ -82,12 +88,26 @@ public class ABM {
     }
 
     public void alta() throws Exception {
+
         Huesped huesped = new Huesped();
+
         System.out.println("Ingrese el nombre:");
         huesped.setNombre(Teclado.nextLine());
         System.out.println("Ingrese el DNI:");
-        huesped.setDni(Teclado.nextInt());
-        Teclado.nextLine();
+        int dni = Teclado.nextInt();
+        Huesped huespedEncontrado = ABMHuesped.readByDNI(dni);
+
+        if (huespedEncontrado == null) {
+
+            huesped.setDni(dni);
+            Teclado.nextLine();
+
+        } else {
+
+            System.out.println("Ya existe un registro con el DNI " + huespedEncontrado.getDni());
+            return;
+        }
+
         System.out.println("Ingrese la domicilio:");
         huesped.setDomicilio(Teclado.nextLine());
 
@@ -95,10 +115,50 @@ public class ABM {
 
         String domAlternativo = Teclado.nextLine();
 
-        if (domAlternativo != null)
+        if (!domAlternativo.isEmpty()) {
             huesped.setDomicilioAlternativo(domAlternativo);
+        }
 
-        
+        Reserva reserva = new Reserva();
+
+        BigDecimal importeReserva = new BigDecimal(1000);
+
+        reserva.setImporteReserva(importeReserva);
+
+        reserva.setImporteTotal(new BigDecimal(3000));
+
+        reserva.setImportePagado(new BigDecimal(0));
+
+        reserva.setFechaReserva(new Date()); // pone automaticamente la fecha de hoy
+
+        System.out.println("Ingrese la fecha de ingreso (dd/mm/yy)");
+
+        Date fechaIngreso = null;
+        Date fechaEgreso = null;
+
+        DateFormat dFormat = new SimpleDateFormat("dd/MM/yy");
+
+        // Alternativa de leer fecha con try catch
+        try {
+            fechaIngreso = dFormat.parse(Teclado.nextLine());
+
+        } catch (Exception ex) {
+            System.out.println("Ingreso una fecha inválida");
+            System.out.println("Vuelva a empezar");
+            return;
+        }
+
+        // Alternativa de leer fecha a los golpes (puede tirar una excepcion)
+        System.out.println("Ingrese la fecha de egreso (dd/mm/yy)");
+        fechaEgreso = dFormat.parse(Teclado.nextLine());
+
+        reserva.setFechaIngreso(fechaIngreso);
+        reserva.setFechaEgreso(fechaEgreso); // por ahora 1 dia
+        reserva.setTipoEstadoId(1); // en mi caso 1 significa pagado
+
+        reserva.setHuesped(huesped);
+
+        // Actualizo todos los objectos
         ABMHuesped.create(huesped);
 
         /*
@@ -193,8 +253,11 @@ public class ABM {
                     break;
                 case 4:
                     System.out.println("Ingrese el nuevo domicilio alternativo:");
-                    Teclado.nextLine();
-                    huespedEncontrado.setDomicilioAlternativo(Teclado.nextLine());
+                    String domAlt = Teclado.nextLine();
+
+                    if (!domAlt.isEmpty()) {
+                    huespedEncontrado.setDomicilioAlternativo(domAlt);
+                    }
 
                     break;
 
@@ -233,11 +296,25 @@ public class ABM {
         }
     }
 
+    public void listarPorDni() {
+
+        System.out.println("Ingrese el DNI de Huesped:");
+        int dni = Teclado.nextInt();
+
+        Huesped huesped = ABMHuesped.readByDNI(dni);
+
+        if (huesped == null) {
+            System.out.println("Huesped no encontrado.");
+
+        } else {
+            mostrarHuesped(huesped);
+        }
+    }
+
     public void mostrarHuesped(Huesped huesped) {
 
-        System.out.print("Id: " + huesped.getHuespedId() + " Nombre: " + huesped.getNombre()
-        + " DNI: " + huesped.getDni()
-        + " Domicilio: " + huesped.getDomicilio());
+        System.out.print("Id: " + huesped.getHuespedId() + " Nombre: " + huesped.getNombre() + " DNI: "
+                + huesped.getDni() + " Domicilio: " + huesped.getDomicilio());
 
         if (huesped.getDomicilioAlternativo() != null)
             System.out.println(" Alternativo: " + huesped.getDomicilioAlternativo());
@@ -253,6 +330,7 @@ public class ABM {
         System.out.println("3. Para modificar un huesped.");
         System.out.println("4. Para ver el listado.");
         System.out.println("5. Buscar un huesped por nombre especifico(SQL Injection)).");
+        System.out.println("6. Buscar un huesped por DNI.");
         System.out.println("0. Para terminar.");
         System.out.println("");
         System.out.println("=======================================");
