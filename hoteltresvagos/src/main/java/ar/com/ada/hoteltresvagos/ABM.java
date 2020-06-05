@@ -23,6 +23,8 @@ public class ABM {
 
     protected ReservaManager ABMReserva = new ReservaManager();
 
+    private DateTimeFormatter dFormat = DateTimeFormatter.ofPattern("dd/MM/yy");
+
     public void iniciar() throws Exception {
 
         try {
@@ -72,6 +74,15 @@ public class ABM {
                         break;
 
                     case 8:
+                        bajaReserva();
+
+                        break;
+
+                    case 9:
+                        modificaReserva();
+                        break;
+
+                    case 10:
                         listarReserva();
                         break;
 
@@ -104,21 +115,33 @@ public class ABM {
 
         Huesped huesped = chequearDniRepetido();
 
-        Reserva reserva = ingresarDatosReserva();
-
-        reserva.setHuesped(huesped);
+        System.out.println("Crear una reserva?");
+        System.out.println("1. Si.");
+        System.out.println("2. No.");
 
         // Actualizo todos los objectos
-        ABMHuesped.create(huesped);
+        if (huesped.getHuespedId() == 0) {
 
-        /*
-         * Si concateno el OBJETO directamente, me trae todo lo que este en el metodo
-         * toString() mi recomendacion es NO usarlo para imprimir cosas en pantallas, si
-         * no para loguear info Lo mejor es usar:
-         * System.out.println("Huesped generada con exito.  " + huesped.getHuespedId);
-         */
+            ABMHuesped.create(huesped);
 
-        System.out.println("Huesped generada con exito.  " + huesped);
+            /*
+             * Si concateno el OBJETO directamente, me trae todo lo que este en el metodo
+             * toString() mi recomendacion es NO usarlo para imprimir cosas en pantallas, si
+             * no para loguear info Lo mejor es usar:
+             * System.out.println("Huesped generada con exito.  " + huesped.getHuespedId);
+             */
+
+            System.out.println("Huesped generado con exito.  " + huesped);
+
+        }
+
+        if (Teclado.nextInt() == 1) {
+
+            Reserva reserva = ingresarDatosReserva();
+
+            reserva.setHuesped(huesped);
+
+        }
 
     }
 
@@ -139,8 +162,9 @@ public class ABM {
 
             ABMHuesped.create(huesped);
 
-        } else
-            ABMHuesped.update(huesped);
+        }
+        // else creo que no es necesario
+        // ABMHuesped.update(huesped);
 
         /*
          * Si concateno el OBJETO directamente, me trae todo lo que este en el metodo
@@ -167,11 +191,10 @@ public class ABM {
             ABMHuesped.create(huesped);
 
         }
-            
 
         // criar um novo hospede ou adicionar um novo
 
-        reserva.setHuesped(huesped); // Hay un problema que el setHuesped también add la reserva al huesped y la reserva todavia no fue creada
+        reserva.setHuesped(huesped);
 
         ABMReserva.create(reserva);
 
@@ -202,13 +225,56 @@ public class ABM {
             try {
 
                 ABMHuesped.delete(huespedEncontrado);
+
+                // No es necesario porque el Cascade.All ya lo deleta.
+
+                // Ademas, en la condicion de if, el dato ya no existe en la base de datos
+                // (porque ya fue feletado en la linea 221), pero si existe en java
+
+                // if (!huespedEncontrado.getReservas().isEmpty()) {
+
+                // for (Reserva reserva : huespedEncontrado.getReservas()) {
+
+                // ABMReserva.delete(reserva);
+
+                // }
+
+                // }
+
                 System.out
                         .println("El registro del huesped " + huespedEncontrado.getHuespedId() + " ha sido eliminado.");
             } catch (Exception e) {
-                System.out.println("Ocurrio un error al eliminar una huesped. Error: " + e.getCause());
+                System.out.println("Ocurrio un error al eliminar una huesped. Error: ");
+                throw e;
             }
 
         }
+
+    }
+
+    public void bajaReserva() {
+        System.out.println("Ingrese el ID de Reserva:");
+        int id = Teclado.nextInt();
+        Teclado.nextLine();
+        Reserva reservaEncontrada = ABMReserva.read(id);
+
+        if (reservaEncontrada == null) {
+            System.out.println("Reserva no encontrado.");
+
+        } else {
+
+            try {
+
+                ABMReserva.delete(reservaEncontrada);
+
+                System.out.println(
+                        "El registro de la reserva " + reservaEncontrada.getReservaId() + " ha sido eliminado.");
+            } catch (Exception e) {
+                System.out.println("Ocurrio un error al eliminar una reserva. Error: " + e.getCause());
+            }
+
+        }
+
     }
 
     public void bajaPorDNI() {
@@ -231,7 +297,7 @@ public class ABM {
         // System.out.println("Ingrese el nombre de la huesped a modificar:");
         // String n = Teclado.nextLine();
 
-        System.out.println("Ingrese el ID de la huesped a modificar:");
+        System.out.println("Ingrese el ID del huesped a modificar:");
         int id = Teclado.nextInt();
         Teclado.nextLine();
         Huesped huespedEncontrado = ABMHuesped.read(id);
@@ -287,6 +353,76 @@ public class ABM {
 
         } else {
             System.out.println("Huesped no encontrado.");
+        }
+
+    }
+
+    public void modificaReserva() throws Exception {
+        // System.out.println("Ingrese el nombre de la huesped a modificar:");
+        // String n = Teclado.nextLine();
+
+        System.out.println("Ingrese el ID de la reserva a modificar:");
+        int id = Teclado.nextInt();
+        Teclado.nextLine();
+        Reserva reservaEncontrada = ABMReserva.read(id);
+
+        if (reservaEncontrada != null) {
+
+            // RECOMENDACION NO USAR toString(), esto solo es a nivel educativo.
+            System.out.println(reservaEncontrada.getReservaId() + " seleccionado para modificacion.");
+
+            System.out.println(
+                    "Elija qué dato de la reserva desea modificar: \n1: fecha ingreso, \n2: fecha egreso, \n3: importe total, \n4: importe pagado, \n5: huesped id");
+            int selecper = Teclado.nextInt();
+
+            switch (selecper) { //TODO Ver para modificar importe total junto ou não
+                case 1:
+                    System.out.println("Ingrese la nueva fecha de ingreso:");
+                    Teclado.nextLine();
+                    reservaEncontrada.setFechaIngreso(LocalDate.parse(Teclado.nextLine(), dFormat));
+
+                    break;
+                case 2:
+                    System.out.println("Ingrese la nueva fecha de egreso:");
+                    Teclado.nextLine();
+                    reservaEncontrada.setFechaEgreso(LocalDate.parse(Teclado.nextLine(), dFormat));
+                    Teclado.nextLine();
+
+                    break;
+                case 3:
+                    System.out.println("Ingrese el nuevo importe total:");
+                    // Teclado.nextLine();
+                    reservaEncontrada.setImporteTotal(Teclado.nextBigDecimal());
+
+                    break;
+                case 4:
+                    System.out.println("Ingrese el nuevo importe pagado:");
+
+                    reservaEncontrada.setImportePagado(Teclado.nextBigDecimal());
+
+                    break;
+
+                case 5:
+
+                    System.out.println("Ingrese el nuevo huesped id:");
+
+                    reservaEncontrada.getHuesped().setHuespedId(Teclado.nextInt());
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            // Teclado.nextLine();
+
+            ABMReserva.update(reservaEncontrada);
+
+            System.out
+                    .println("El registro de la reserva " + reservaEncontrada.getReservaId() + " ha sido modificado.");
+
+        } else {
+            System.out.println("Reserva no encontrada.");
         }
 
     }
@@ -350,7 +486,8 @@ public class ABM {
         System.out.print("Id: " + reserva.getReservaId() + " Fecha Reserva: " + reserva.getFechaReserva()
                 + " Fecha Ingreso: " + reserva.getFechaIngreso() + " Fecha Egreso: " + reserva.getFechaEgreso()
                 + "\nImporte Reserva: " + reserva.getImporteReserva() + " Importe Total: " + reserva.getImporteTotal()
-                + " Importe Pagado: " + reserva.getImportePagado());
+                + " Importe Pagado: " + reserva.getImportePagado() + " Huesped ID: "
+                + reserva.getHuesped().getHuespedId());
 
         if (reserva.getHabitacion() != null)
             System.out.println(" Habitación: " + reserva.getHabitacion());
@@ -368,7 +505,9 @@ public class ABM {
         System.out.println("5. Buscar un huesped por nombre especifico(SQL Injection)).");
         System.out.println("6. Buscar un huesped por DNI.");
         System.out.println("7. Para agregar una reserva.");
-        System.out.println("8. Para ver el listado de reservas.");
+        System.out.println("8. Para eliminar una reserva.");
+        System.out.println("9. Para modificar una reserva.");
+        System.out.println("10. Para ver el listado de reservas.");
         System.out.println("0. Para terminar.");
         System.out.println("");
         System.out.println("=======================================");
@@ -383,8 +522,6 @@ public class ABM {
         reserva.setFechaReserva(LocalDate.now()); // pone automaticamente la fecha de hoy
 
         System.out.println("Ingrese la fecha de ingreso (dd/mm/yy)");
-
-        DateTimeFormatter dFormat = DateTimeFormatter.ofPattern("dd/MM/yy");
 
         try {
             fechaIngreso = LocalDate.parse(Teclado.nextLine(), dFormat);
@@ -444,7 +581,7 @@ public class ABM {
 
     public Huesped ingresarDatosHuesped(Huesped huesped) throws Exception {
 
-        System.out.println("Ingrese la domicilio:");
+        System.out.println("Ingrese el domicilio:");
         huesped.setDomicilio(Teclado.nextLine());
 
         System.out.println("Ingrese el Domicilio alternativo(OPCIONAL):");
@@ -481,15 +618,16 @@ public class ABM {
         } else {
 
             System.out.println("Ya existe un registro con el DNI " + huespedEncontrado.getDni());
-            return iniciarDniRepetido(huesped, dni);
+            return iniciarDniRepetido(huespedEncontrado);
         }
     }
 
-    public Huesped iniciarDniRepetido(Huesped huesped, int dni) throws Exception {
+    public Huesped iniciarDniRepetido(Huesped huesped) throws Exception {
 
         printOpcionesDniRepetido();
 
         int opcion = Teclado.nextInt();
+        Teclado.nextLine();
 
         switch (opcion) {
             case 1:
@@ -498,16 +636,7 @@ public class ABM {
 
             case 2:
 
-                try {
-
-                    huesped = ABMHuesped.readByDNI(dni);
-                    return huesped;
-
-                } catch (Exception e) {
-                    System.out.println("Huesped no encontrado.");
-                    iniciar();
-                    return null;
-                }
+                return huesped;
 
             case 3:
 
@@ -525,9 +654,17 @@ public class ABM {
         System.out.println("==============================");
         System.out.println("");
         System.out.println("1. Intentar de nuevo.");
-        System.out.println("2. Usar el huesped ya registrado.");
+        System.out.println("2. Usar huesped ya registrado.");
         System.out.println("3. Volver al menu inicial.");
         System.out.println("");
         System.out.println("==============================");
+    }
+
+    public DateTimeFormatter getdFormat() {
+        return dFormat;
+    }
+
+    public void setdFormat(DateTimeFormatter dFormat) {
+        this.dFormat = dFormat;
     }
 }
