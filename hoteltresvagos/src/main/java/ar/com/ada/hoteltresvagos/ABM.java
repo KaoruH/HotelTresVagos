@@ -102,7 +102,7 @@ public class ABM {
 
     public void altaHuesped() throws Exception {
 
-        Huesped huesped = ingresarDatosHuesped();
+        Huesped huesped = chequearDniRepetido();
 
         Reserva reserva = ingresarDatosReserva();
 
