@@ -1,7 +1,7 @@
 package ar.com.ada.hoteltresvagos.entities;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.*;
 
@@ -15,11 +15,11 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int reservaId;
     @Column(name="fecha_reserva")
-    private Date fechaReserva;
+    private LocalDate fechaReserva;
     @Column(name="fecha_ingreso")
-    private Date fechaIngreso;
+    private LocalDate fechaIngreso;
     @Column(name="fecha_egreso")
-    private Date fechaEgreso;
+    private LocalDate fechaEgreso;
     private Integer habitacion;
     @Column(name="importe_reserva")
     private BigDecimal importeReserva;
@@ -41,27 +41,27 @@ public class Reserva {
         this.reservaId = reservaId;
     }
 
-    public Date getFechaReserva() {
+    public LocalDate getFechaReserva() {
         return fechaReserva;
     }
 
-    public void setFechaReserva(Date fechaReserva) {
+    public void setFechaReserva(LocalDate fechaReserva) {
         this.fechaReserva = fechaReserva;
     }
 
-    public Date getFechaIngreso() {
+    public LocalDate getFechaIngreso() {
         return fechaIngreso;
     }
 
-    public void setFechaIngreso(Date fechaIngreso) {
+    public void setFechaIngreso(LocalDate fechaIngreso) {
         this.fechaIngreso = fechaIngreso;
     }
 
-    public Date getFechaEgreso() {
+    public LocalDate getFechaEgreso() {
         return fechaEgreso;
     }
 
-    public void setFechaEgreso(Date fechaEgreso) {
+    public void setFechaEgreso(LocalDate fechaEgreso) {
         this.fechaEgreso = fechaEgreso;
     }
 
@@ -111,7 +111,15 @@ public class Reserva {
 
     public void setHuesped(Huesped huesped) {
         this.huesped = huesped;
+
+        
         this.huesped.getReservas().add(this);
+    }
+
+    @Override
+    public String toString() {
+        
+        return " [reservaid = "+ this.getReservaId() + ", importe total = " + this.getImporteTotal() + "] ";
     }
 
 

@@ -12,7 +12,7 @@ import org.hibernate.boot.registry.*;
 
 import ar.com.ada.hoteltresvagos.entities.*;
 
-public class HuespedManager {
+public class ReservaManager {
 
     protected SessionFactory sessionFactory;
 
@@ -36,54 +36,44 @@ public class HuespedManager {
         sessionFactory.close();
     }
 
-    public void create(Huesped huesped) {
+    public void create(Reserva reserva) {
 
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        session.save(huesped);
+        session.save(reserva);
 
         session.getTransaction().commit();
         session.close();
     }
 
-    public Huesped read(int huespedId) {
+    public Reserva read(int reservaId) {
         Session session = sessionFactory.openSession();
 
-        Huesped huesped = session.get(Huesped.class, huespedId);
+        Reserva reserva = session.get(Reserva.class, reservaId);
 
         session.close();
 
-        return huesped;
+        return reserva;
     }
 
-    public Huesped readByDNI(int dni) {
-        Session session = sessionFactory.openSession();
-
-        Huesped huesped = session.byNaturalId(Huesped.class).using("dni", dni).load();
-
-        session.close();
-
-        return huesped;
-    }
-
-    public void update(Huesped huesped) {
+    public void update(Reserva reserva) {
 
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        session.update(huesped);
+        session.update(reserva);
 
         session.getTransaction().commit();
         session.close();
     }
 
-    public void delete(Huesped huesped) {
+    public void delete(Reserva reserva) {
 
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        session.delete(huesped);
+        session.delete(reserva);
 
         session.getTransaction().commit();
         session.close();
@@ -95,28 +85,28 @@ public class HuespedManager {
      * 
      * @return
      */
-    public List<Huesped> buscarTodos() {
+    public List<Reserva> buscarTodos() {
 
         Session session = sessionFactory.openSession();
 
         /// NUNCA HARCODEAR SQLs nativos en la aplicacion.
         // ESTO es solo para nivel educativo
-        Query query = session.createNativeQuery("SELECT * FROM huesped", Huesped.class);
+        Query query = session.createNativeQuery("SELECT * FROM reserva", Reserva.class);
         //query = session.createQuery("From Obse")
-        List<Huesped> todos = query.getResultList();
+        List<Reserva> todos = query.getResultList();
 
         return todos;
 
     }
 
     /**
-     * Busca una lista de huespedes por el nombre completo Esta armado para que se
+     * Busca una lista de reserva por el nombre completo Esta armado para que se
      * pueda generar un SQL Injection y mostrar commo NO debe programarse.
      * 
      * @param nombre
      * @return
      */
-    public List<Huesped> buscarPor(String nombre) {
+    public List<Reserva> buscarPor(String nombre) {
 
         Session session = sessionFactory.openSession();
 
@@ -124,12 +114,22 @@ public class HuespedManager {
         // Deberia traer solo aquella del nombre y con esto demostrarmos que trae todas
         // si pasamos
         // como nombre: "' or '1'='1"
-        Query query = session.createNativeQuery("SELECT * FROM huesped where nombre = '" + nombre + "'", Huesped.class);
+        //Nunca hacer de esta manera
+        //Query query = session.createNativeQuery("SELECT * FROM huesped h inner join reserva r on h.huesped_id = r.huesped_id where nombre = '" + nombre + "'", Huesped.class);
 
-        List<Huesped> huespedes = query.getResultList();
+        //Forma sql query nativa con parametro
+        Query queryForma1 = session.createNativeQuery("SELECT * FROM huesped h inner join reserva r on h.huesped_id = r.huesped_id where nombre = ?", Reserva.class);
+        
+        queryForma1.setParameter(1, nombre);
 
-        return huespedes;
+        //forma query utilizando JPQL
+        //Query queryForma2 = session.createNativeQuery("SELECT r from Reserva r WHERE r.huesped.nombre = :nombre", Reserva.class);
+        //queryForma2.setParameter("nombre", nombre);
+        
+        List<Reserva> reservas = queryForma1.getResultList();
+
+        return reservas;
 
     }
-
+    
 }
