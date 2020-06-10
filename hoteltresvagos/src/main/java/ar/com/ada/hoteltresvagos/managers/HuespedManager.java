@@ -9,8 +9,7 @@ import org.hibernate.*;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.*;
 
-
-import ar.com.ada.hoteltresvagos.entities.*;
+import ar.com.ada.hoteltresvagos.entities.Huesped;
 
 public class HuespedManager {
 
@@ -102,7 +101,7 @@ public class HuespedManager {
         /// NUNCA HARCODEAR SQLs nativos en la aplicacion.
         // ESTO es solo para nivel educativo
         Query query = session.createNativeQuery("SELECT * FROM huesped", Huesped.class);
-        //query = session.createQuery("From Obse")
+        // query = session.createQuery("From Obse")
         List<Huesped> todos = query.getResultList();
 
         return todos;

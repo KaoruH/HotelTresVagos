@@ -9,8 +9,7 @@ import org.hibernate.*;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.*;
 
-
-import ar.com.ada.hoteltresvagos.entities.*;
+import ar.com.ada.hoteltresvagos.entities.Reserva;
 
 public class ReservaManager {
 
@@ -92,7 +91,7 @@ public class ReservaManager {
         /// NUNCA HARCODEAR SQLs nativos en la aplicacion.
         // ESTO es solo para nivel educativo
         Query query = session.createNativeQuery("SELECT * FROM reserva", Reserva.class);
-        //query = session.createQuery("From Obse")
+        // query = session.createQuery("From Obse")
         List<Reserva> todos = query.getResultList();
 
         return todos;
@@ -114,22 +113,43 @@ public class ReservaManager {
         // Deberia traer solo aquella del nombre y con esto demostrarmos que trae todas
         // si pasamos
         // como nombre: "' or '1'='1"
-        //Nunca hacer de esta manera
-        //Query query = session.createNativeQuery("SELECT * FROM huesped h inner join reserva r on h.huesped_id = r.huesped_id where nombre = '" + nombre + "'", Huesped.class);
+        // Nunca hacer de esta manera
+        // Query query = session.createNativeQuery("SELECT * FROM huesped h inner join
+        // reserva r on h.huesped_id = r.huesped_id where nombre = '" + nombre + "'",
+        // Huesped.class);
 
-        //Forma sql query nativa con parametro
-        Query queryForma1 = session.createNativeQuery("SELECT * FROM huesped h inner join reserva r on h.huesped_id = r.huesped_id where nombre = ?", Reserva.class);
-        
+        // Forma sql query nativa con parametro
+        Query queryForma1 = session.createNativeQuery(
+                "SELECT * FROM huesped h inner join reserva r on h.huesped_id = r.huesped_id where nombre = ?",
+                Reserva.class);
+
         queryForma1.setParameter(1, nombre);
 
-        //forma query utilizando JPQL
-        //Query queryForma2 = session.createNativeQuery("SELECT r from Reserva r WHERE r.huesped.nombre = :nombre", Reserva.class);
-        //queryForma2.setParameter("nombre", nombre);
-        
+        // forma query utilizando JPQL
+        // Query queryForma2 = session.createNativeQuery("SELECT r from Reserva r WHERE
+        // r.huesped.nombre = :nombre", Reserva.class);
+        // queryForma2.setParameter("nombre", nombre);
+
         List<Reserva> reservas = queryForma1.getResultList();
 
         return reservas;
 
     }
-    
+
+    public List<Reserva> readByDNI(int dni) {
+
+        Session session = sessionFactory.openSession();
+
+        Query queryForma1 = session.createNativeQuery(
+                "SELECT * FROM huesped h inner join reserva r on h.huesped_id = r.huesped_id where dni = ?",
+                Reserva.class);
+
+        queryForma1.setParameter(1, dni);
+
+        List<Reserva> reservas = queryForma1.getResultList();
+
+        return reservas;
+
+    }
+
 }
